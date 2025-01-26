@@ -11,17 +11,22 @@ const averageRate = ref(0)
 const reviewsNumber = ref(0)
 const starNumber = ref(4)
 const error = ref(false)
+const isApiError = ref(false)
 
 onMounted(() => {
-  fetchReviews().then((res) => {
-    reviewsNumber.value = res.length
-    const rate = res.reduce((accum, value) => {
-      return accum + value.rating
-    }, 0)
-    averageRate.value = Math.round((rate / res.length / 20) * 10) / 10
-    starNumber.value = Math.round(rate / res.length / 20)
-    loading.value = false
-  })
+  fetchReviews()
+    .then((res) => {
+      reviewsNumber.value = res.length
+      const rate = res.reduce((accum, value) => {
+        return accum + value.rating
+      }, 0)
+      averageRate.value = Math.round((rate / res.length / 20) * 10) / 10
+      starNumber.value = Math.round(rate / res.length / 20)
+      loading.value = false
+    })
+    .catch(() => {
+      isApiError.value = true
+    })
 })
 
 const handleWriteClick = () => {
@@ -30,7 +35,7 @@ const handleWriteClick = () => {
 </script>
 
 <template>
-  <div class="google-review-block">
+  <div v-if="!isApiError" class="google-review-block">
     <div class="left-block">
       <div class="client-reviews">
         <GoogleLogo />
@@ -53,6 +58,7 @@ const handleWriteClick = () => {
       <SecondaryButton @click="handleWriteClick">Написати</SecondaryButton>
     </div>
   </div>
+  <div v-else class="error-message">Network Error</div>
   <div v-if="error" class="error-message">Error message</div>
 </template>
 
